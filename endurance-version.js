@@ -519,7 +519,6 @@ function buildStressEvent(now = Date.now()) {
     participant_id: participantId,
     question_index: questionIndex,
     event_type: "stress",
-    event_at: new Date(now).toISOString(),
     session_elapsed_ms: Math.round(activeSessionElapsed(now)),
     question_elapsed_ms: Math.round(activeQuestionElapsed(now))
   };
