@@ -1,0 +1,895 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>一番多いのは？ | 学習ログ</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --surface: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #d8dee8;
+      --blue: #2563eb;
+      --green: #0f766e;
+      --red: #dc2626;
+      --amber: #f59e0b;
+      --shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", Meiryo, system-ui, sans-serif;
+    }
+
+    ruby {
+      ruby-align: center;
+    }
+
+    rt {
+      color: var(--muted);
+      font-size: 0.5em;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      min-width: 0;
+      min-height: 54px;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1,
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 22px;
+      line-height: 1.35;
+    }
+
+    h2 {
+      font-size: 24px;
+      line-height: 1.35;
+    }
+
+    main {
+      width: min(1080px, 100%);
+      margin: 0 auto;
+      padding: clamp(12px, 2vw, 20px);
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .start {
+      display: grid;
+      gap: 18px;
+      padding: 22px;
+    }
+
+    .start-grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 1.5fr) minmax(220px, 1fr);
+      gap: 12px;
+      align-items: start;
+    }
+
+    .start-grid > label {
+      min-width: 0;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .label-title {
+      display: inline-block;
+      min-height: 34px;
+      line-height: 1.25;
+      white-space: nowrap;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 52px;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      padding: 0 12px;
+      background: #fbfcfe;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .primary {
+      border-color: var(--blue);
+      background: var(--blue);
+      color: #ffffff;
+    }
+
+    .download-btn {
+      border-color: var(--green);
+      background: var(--green);
+      color: #ffffff;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    #startBtn {
+      width: 100%;
+      align-self: start;
+      margin-top: 40px;
+    }
+
+    .workspace {
+      display: none;
+      gap: 14px;
+    }
+
+    .workspace.active {
+      display: grid;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .metric {
+      min-height: 78px;
+      display: grid;
+      align-content: center;
+      gap: 4px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .metric b {
+      font-size: 28px;
+      line-height: 1.1;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .task {
+      position: relative;
+      display: grid;
+      gap: 18px;
+      padding: clamp(14px, 2.4vw, 24px);
+      overflow: hidden;
+    }
+
+    .question {
+      min-height: 96px;
+      display: grid;
+      place-items: center;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .question strong {
+      font-size: clamp(34px, 5.5vw, 56px);
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .choices[data-count="4"] {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .choices[data-count="6"] {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .choice {
+      min-height: 238px;
+      display: grid;
+      place-items: center;
+      padding: 14px;
+      border: 3px solid var(--line);
+      background: #ffffff;
+    }
+
+    .dot-board {
+      width: min(100%, 260px);
+      aspect-ratio: 1 / 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 10px;
+      padding: 18px;
+      border: 2px solid #e5eaf1;
+      border-radius: 8px;
+      background: #fbfcfe;
+    }
+
+    .dot-cell {
+      display: grid;
+      place-items: center;
+    }
+
+    .dot {
+      width: clamp(22px, 5.8vw, 36px);
+      height: clamp(22px, 5.8vw, 36px);
+      border-radius: 999px;
+      background: var(--green);
+      border: 2px solid #115e59;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .action-btn {
+      min-height: 78px;
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      text-align: left;
+    }
+
+    .action-btn svg {
+      width: 38px;
+      height: 38px;
+      stroke: currentColor;
+      stroke-width: 2.4;
+      fill: none;
+    }
+
+    .stress-btn {
+      border-color: #f3c678;
+      background: #fff8eb;
+      color: #92400e;
+    }
+
+    .stress-symbol {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border: 3px solid currentColor;
+      border-radius: 50%;
+      font-size: 26px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .stress-feedback {
+      min-height: 1.6em;
+      margin: -6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.6;
+      text-align: left;
+    }
+
+    .end-btn {
+      border-color: #fecaca;
+      background: #fff1f2;
+      color: var(--red);
+    }
+
+    .button-text {
+      display: block;
+      font-size: 22px;
+      line-height: 1.15;
+    }
+
+    .button-text rt {
+      font-size: 0.48em;
+    }
+
+    .done {
+      display: none;
+      gap: 16px;
+      padding: 28px;
+      text-align: center;
+    }
+
+    .done.active {
+      display: grid;
+    }
+
+    .done-stats {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      text-align: left;
+    }
+
+    .done-stat {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+    }
+
+    .done-stat b {
+      display: block;
+      font-size: 28px;
+    }
+
+    .done-stat span {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .done-note {
+      margin: 4px 0 0;
+      color: var(--ink);
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.7;
+      text-align: left;
+      overflow-wrap: anywhere;
+    }
+
+    .field-hint {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.55;
+    }
+
+    .delivery-status {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      margin: 18px 0;
+      padding: 16px;
+      border: 2px solid #2d66da;
+      border-radius: 8px;
+      background: #edf4ff;
+      text-align: left;
+      overflow-wrap: anywhere;
+    }
+
+    .delivery-status.success {
+      border-color: #137f71;
+      background: #eaf8f4;
+    }
+
+    .delivery-status.error {
+      border-color: #c74b4b;
+      background: #fff1f1;
+    }
+
+    .delivery-icon {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border-radius: 50%;
+      color: #fff;
+      background: #2d66da;
+      font-size: 24px;
+      font-weight: 900;
+    }
+
+    .delivery-status.success .delivery-icon { background: #137f71; }
+    .delivery-status.error .delivery-icon { background: #c74b4b; }
+
+    .delivery-title {
+      display: block;
+      font-size: 18px;
+      line-height: 1.35;
+    }
+
+    .self-report {
+      display: grid;
+      gap: 16px;
+      padding: 18px;
+      border: 3px solid #d49a12;
+      border-radius: 8px;
+      background: #fffcf2;
+      text-align: left;
+    }
+
+    .self-report-step {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 28px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #9a6700;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .self-report h3 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.4;
+    }
+
+    .self-report-intro,
+    .self-report-status {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.6;
+    }
+
+    .self-report-status {
+      min-height: 1.6em;
+    }
+
+    .report-field {
+      display: grid;
+      gap: 9px;
+      min-width: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    .report-field legend {
+      padding: 0;
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.5;
+    }
+
+    .report-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .report-option {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 8px 12px;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      overflow-wrap: anywhere;
+    }
+
+    .report-option input {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      opacity: 0;
+    }
+
+    .report-option:has(input:checked) {
+      border-color: var(--blue);
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .rating-options {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .rating-options .report-option {
+      min-width: 0;
+      padding: 8px 6px;
+    }
+
+    .rating-hint {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .report-other {
+      min-height: 48px;
+      resize: vertical;
+      padding: 10px 12px;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+    }
+
+    .report-actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px;
+    }
+
+    .secondary {
+      background: var(--surface);
+      color: var(--muted);
+    }
+
+    @media (max-width: 1024px) {
+      .start-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .task {
+        padding: 20px;
+      }
+
+      .choices {
+        gap: 10px;
+      }
+
+      .choices[data-count="4"] {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .choices[data-count="6"] {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .choice {
+        min-height: 180px;
+        padding: 10px;
+      }
+
+      .dot-board {
+        width: min(100%, 180px);
+        padding: 10px;
+        gap: 6px;
+      }
+
+      .dot {
+        width: clamp(20px, 3.6vw, 32px);
+        height: clamp(20px, 3.6vw, 32px);
+      }
+    }
+
+    @media (max-width: 760px) {
+      header {
+        display: grid;
+        padding: 12px;
+      }
+
+      .start-grid {
+        grid-template-columns: 1fr;
+      }
+
+      #startBtn {
+        margin-top: 0;
+      }
+
+      .choices {
+        gap: 10px;
+      }
+
+      .choices[data-count="4"],
+      .choices[data-count="6"] {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .choice {
+        min-height: 190px;
+        padding: 10px;
+      }
+
+      .dot-board {
+        padding: 12px;
+        gap: 8px;
+      }
+
+      .actions {
+        grid-template-columns: 1fr;
+      }
+
+      .report-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .delivery-status {
+        grid-template-columns: 36px minmax(0, 1fr);
+        gap: 10px;
+        margin: 14px 0;
+        padding: 14px;
+      }
+
+      .delivery-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 21px;
+      }
+    }
+
+    @media (max-width: 460px) {
+      main {
+        padding: 10px;
+      }
+
+      .start,
+      .task,
+      .done {
+        padding: 14px;
+      }
+
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .done-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .delivery-status {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+      }
+
+      .done-note {
+        text-align: center;
+      }
+
+      .question {
+        min-height: 82px;
+      }
+
+      .question strong {
+        font-size: 34px;
+      }
+
+      .choice {
+        min-height: 156px;
+      }
+
+      .dot-board {
+        gap: 6px;
+      }
+
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1><ruby>一番<rt>いちばん</rt></ruby><ruby>多<rt>おお</rt></ruby>いのは？</h1>
+    </header>
+
+    <main>
+      <section class="start card" id="startScreen">
+        <h2><ruby>始<rt>はじ</rt></ruby>める<ruby>前<rt>まえ</rt></ruby></h2>
+        <div class="start-grid">
+          <label>
+            <span class="label-title"><ruby>個人<rt>こじん</rt></ruby>ID</span>
+            <input id="participantInput" type="text" placeholder="学籍番号 または ID" autocomplete="off" required>
+            <span class="field-hint"><ruby>毎回<rt>まいかい</rt></ruby>、<ruby>同<rt>おな</rt></ruby>じIDを<ruby>入力<rt>にゅうりょく</rt></ruby>してください。</span>
+          </label>
+          <button class="primary" id="startBtn">
+            <ruby>始<rt>はじ</rt></ruby>める
+          </button>
+        </div>
+      </section>
+
+      <section class="workspace" id="workspace">
+        <div class="metrics">
+          <div class="metric">
+            <b id="answeredText">0</b>
+            <span><ruby>答<rt>こた</rt></ruby>えた<ruby>数<rt>かず</rt></ruby></span>
+          </div>
+        </div>
+
+        <section class="task card">
+          <div class="question">
+            <strong>
+              いちばん<ruby>多<rt>おお</rt></ruby>いのは？
+            </strong>
+          </div>
+
+          <div class="choices" id="choices"></div>
+
+          <div class="actions">
+            <button class="action-btn stress-btn" id="stressBtn" type="button" aria-describedby="stressFeedback">
+              <span class="stress-symbol" aria-hidden="true">!</span>
+              <span class="button-text">ストレス・<ruby>疲<rt>つか</rt></ruby>れを<ruby>感<rt>かん</rt></ruby>じた</span>
+            </button>
+            <button class="action-btn end-btn" id="giveUpBtn" type="button">
+              <svg viewBox="0 0 48 48" aria-hidden="true">
+                <rect x="12" y="12" width="24" height="24" rx="4"></rect>
+              </svg>
+              <span class="button-text">ギブアップ</span>
+            </button>
+          </div>
+          <p class="stress-feedback" id="stressFeedback" aria-live="polite">ストレスや<ruby>疲<rt>つか</rt></ruby>れを<ruby>感<rt>かん</rt></ruby>じたときに<ruby>押<rt>お</rt></ruby>してください。<ruby>問題<rt>もんだい</rt></ruby>はそのまま<ruby>続<rt>つづ</rt></ruby>きます。</p>
+        </section>
+      </section>
+
+      <section class="done card" id="doneScreen">
+        <h2 id="doneTitle"><ruby>終<rt>お</rt></ruby>わりました</h2>
+        <div class="done-stats">
+          <div class="done-stat">
+            <b id="doneAnsweredText">0</b>
+            <span><ruby>答<rt>こた</rt></ruby>えた<ruby>数<rt>かず</rt></ruby></span>
+          </div>
+        </div>
+        <section class="delivery-status sending" id="deliveryStatus" role="status" aria-live="polite">
+          <span class="delivery-icon" id="deliveryIcon" aria-hidden="true">!</span>
+          <div>
+            <strong class="delivery-title" id="deliveryTitle">データを<ruby>送信中<rt>そうしんちゅう</rt></ruby>です</strong>
+            <p class="done-note" id="doneNoteText">この<ruby>画面<rt>がめん</rt></ruby>を<ruby>閉<rt>と</rt></ruby>じずに、<ruby>送信<rt>そうしん</rt></ruby>が<ruby>終<rt>お</rt></ruby>わるまでお<ruby>待<rt>ま</rt></ruby>ちください。</p>
+          </div>
+        </section>
+        <section class="self-report" id="selfReportPanel" aria-labelledby="selfReportTitle">
+          <span class="self-report-step">最後のステップ</span>
+          <h3 id="selfReportTitle"><ruby>テスト後<rt>ご</rt></ruby>のふりかえりを<ruby>送<rt>おく</rt></ruby>ってください</h3>
+          <p class="self-report-intro">答えたくない項目は空欄のままでも大丈夫です。回答後は、下の「ふりかえりを送信して終了する」を押してください。</p>
+
+          <fieldset class="report-field">
+            <legend><ruby>終<rt>お</rt></ruby>わりにした<ruby>主<rt>おも</rt></ruby>な<ruby>理由<rt>りゆう</rt></ruby></legend>
+            <div class="report-options">
+              <label class="report-option"><input type="radio" name="endReason" value="fatigue"><span>疲れた</span></label>
+              <label class="report-option"><input type="radio" name="endReason" value="boredom"><span>飽きた</span></label>
+              <label class="report-option"><input type="radio" name="endReason" value="concentration_difficulty"><span>集中しにくい</span></label>
+              <label class="report-option"><input type="radio" name="endReason" value="task_difficulty"><span>問題が難しい</span></label>
+              <label class="report-option"><input type="radio" name="endReason" value="time_constraint"><span>時間がない</span></label>
+              <label class="report-option"><input type="radio" name="endReason" value="enough"><span>もう十分</span></label>
+              <label class="report-option"><input type="radio" name="endReason" value="other"><span>その他</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="report-field">
+            <legend><ruby>最後<rt>さいご</rt></ruby>のほうは<ruby>集中<rt>しゅうちゅう</rt></ruby>できていましたか</legend>
+            <div class="rating-hint"><span>できなかった</span><span>できた</span></div>
+            <div class="rating-options">
+              <label class="report-option"><input type="radio" name="concentrationRating" value="1"><span>1</span></label>
+              <label class="report-option"><input type="radio" name="concentrationRating" value="2"><span>2</span></label>
+              <label class="report-option"><input type="radio" name="concentrationRating" value="3"><span>3</span></label>
+              <label class="report-option"><input type="radio" name="concentrationRating" value="4"><span>4</span></label>
+              <label class="report-option"><input type="radio" name="concentrationRating" value="5"><span>5</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="report-field">
+            <legend>ストレスボタンを<ruby>押<rt>お</rt></ruby>したとき、どのような<ruby>気持<rt>きも</rt></ruby>ちでしたか（あてはまるものすべて）</legend>
+            <div class="report-options">
+              <label class="report-option"><input type="checkbox" name="stressFeelings" value="fatigue"><span>疲れた</span></label>
+              <label class="report-option"><input type="checkbox" name="stressFeelings" value="boredom"><span>飽きた</span></label>
+              <label class="report-option"><input type="checkbox" name="stressFeelings" value="irritation"><span>いらいらした</span></label>
+              <label class="report-option"><input type="checkbox" name="stressFeelings" value="anxiety_or_restlessness"><span>焦った・不安だった</span></label>
+              <label class="report-option"><input type="checkbox" name="stressFeelings" value="concentration_difficulty"><span>集中しにくかった</span></label>
+              <label class="report-option"><input type="checkbox" name="stressFeelings" value="sleepiness"><span>眠かった</span></label>
+              <label class="report-option"><input type="checkbox" name="stressFeelings" value="wanted_to_stop"><span>やめたいと思った</span></label>
+              <label class="report-option"><input type="checkbox" name="stressFeelings" value="other"><span>その他</span></label>
+              <label class="report-option"><input type="checkbox" name="stressFeelings" value="not_pressed"><span>押していない</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="report-field">
+            <legend><ruby>問題<rt>もんだい</rt></ruby>は<ruby>難<rt>むずか</rt></ruby>しかったですか</legend>
+            <div class="rating-hint"><span>やさしかった</span><span>むずかしかった</span></div>
+            <div class="rating-options">
+              <label class="report-option"><input type="radio" name="difficultyRating" value="1"><span>1</span></label>
+              <label class="report-option"><input type="radio" name="difficultyRating" value="2"><span>2</span></label>
+              <label class="report-option"><input type="radio" name="difficultyRating" value="3"><span>3</span></label>
+              <label class="report-option"><input type="radio" name="difficultyRating" value="4"><span>4</span></label>
+              <label class="report-option"><input type="radio" name="difficultyRating" value="5"><span>5</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="report-field">
+            <legend><ruby>途中<rt>とちゅう</rt></ruby>でテスト<ruby>以外<rt>いがい</rt></ruby>のことはありましたか</legend>
+            <div class="report-options">
+              <label class="report-option"><input type="radio" name="externalInterruption" value="none"><span>なかった</span></label>
+              <label class="report-option"><input type="radio" name="externalInterruption" value="some"><span>少しあった</span></label>
+              <label class="report-option"><input type="radio" name="externalInterruption" value="frequent"><span>何回もあった</span></label>
+            </div>
+          </fieldset>
+
+          <label class="report-field" for="otherReason">
+            <span class="label-title">そのほか（書きたいことがあれば）</span>
+            <textarea class="report-other" id="otherReason" rows="2" maxlength="300"></textarea>
+          </label>
+
+          <p class="self-report-status" id="selfReportStatus" aria-live="polite"></p>
+          <div class="report-actions">
+            <button class="primary" id="submitSelfReportBtn" type="button">ふりかえりを<ruby>送信<rt>そうしん</rt></ruby>して<ruby>終了<rt>しゅうりょう</rt></ruby>する</button>
+            <button class="secondary" id="skipSelfReportBtn" type="button">答えないで<ruby>終<rt>お</rt></ruby>わる</button>
+          </div>
+        </section>
+        <button class="download-btn" id="downloadCsvBtn" type="button" disabled hidden>
+          CSVを<ruby>保存<rt>ほぞん</rt></ruby>する
+        </button>
+        <button class="primary" id="restartBtn">
+          <ruby>最初<rt>さいしょ</rt></ruby>に<ruby>戻<rt>もど</rt></ruby>る
+        </button>
+      </section>
+    </main>
+  </div>
+
+  <script src="collector-config.js?v=20260914-collector-2"></script>
+  <script src="endurance-version.js?v=20260930-self-report-2"></script>
+</body>
+</html>
